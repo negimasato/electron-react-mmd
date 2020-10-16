@@ -20,6 +20,9 @@
     "jsx": "react"
   },
   "include": [
-    "src"
-  ]
+    "src",
+  ],
+  "files": [  
+    "@types/global.d.ts"
+  ],
 }

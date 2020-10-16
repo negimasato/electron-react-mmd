@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "target": "es2017",
+      "module": "commonjs",
+      "lib": [
+        "dom",
+        "esnext"
+      ],
+      "sourceMap": true,
+      "strict": true,
+      "outDir": "../build",
+      "rootDir": "../",
+      "noEmitOnError": false,
+      "typeRoots": [
+        "node_modules/@types"
+      ],
+      "skipLibCheck": true
+    }
+  }

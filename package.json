@@ -1,0 +1,84 @@
+{
+  "name": "mmd-electron",
+  "version": "0.1.0",
+  "private": true,
+  "main": "build/electron/main.js",
+  "dependencies": {
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
+    "@react-three/drei": "^2.1.1-beta.3",
+    "@types/react-grid-layout": "^1.1.1",
+    "electron-is-dev": "^1.2.0",
+    "electron-store": "^6.0.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-grid-layout": "^1.1.1",
+    "react-three-fiber": "^5.0.3",
+    "react-three-gui": "^0.3.1",
+    "three": "^0.121.1"
+  },
+  "build": {
+    "extends": null,
+    "files": [
+      "build/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "portable"
+    }
+  },
+  "scripts": {
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "postinstall": "electron-builder install-app-deps",
+    "wait-start": "wait-on http://localhost:3000",
+    "start": "concurrently \"npm run start:start-server\" \"npm run start:watch-electron\" \"npm run start:use-electron\"",
+    "start:start-server": "cross-env BROWSER=none react-scripts start",
+    "start:watch-electron": "run-s wait-start start:watch-electron:watch",
+    "start:watch-electron:watch": "tsc -p electron -w",
+    "start:use-electron": "run-s wait-start start:use-electron:build start:use-electron:run",
+    "start:use-electron:build": "tsc -p electron",
+    "start:use-electron:run": "electron .",
+    "build": "run-s build:clean build:react build:electron build:electron-builder",
+    "build:clean": "rimraf build dist",
+    "build:react": "react-scripts build",
+    "build:electron": "tsc -p electron",
+    "build:electron-builder": "electron-builder"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
+    "@types/jest": "^24.9.1",
+    "@types/node": "^12.12.54",
+    "@types/react": "^16.9.46",
+    "@types/react-dom": "^16.9.8",
+    "concurrently": "^5.3.0",
+    "cross-env": "^7.0.2",
+    "electron": "^8.2.0",
+    "electron-builder": "^22.8.0",
+    "electron-reload": "^1.5.0",
+    "npm-run-all": "^4.1.5",
+    "react-scripts": "3.4.3",
+    "rimraf": "^3.0.2",
+    "typescript": "^3.9.7",
+    "wait-on": "^5.2.0"
+  }
+}
