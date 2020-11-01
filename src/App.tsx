@@ -9,6 +9,8 @@ import BoneLists from './BoneLists';
 import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
 import { Bone } from 'three';
 import { SkinnedMesh } from 'three/src/objects/SkinnedMesh';
+import Measure, { BoundingRect }  from 'react-measure';
+import TimeLiner from './component/TimeLinerComponent';
 
 
 function Box(props: any) {
@@ -48,22 +50,36 @@ type ModelType = {
 
 function App() {
   const [text, setText] = useState("not loaded");
+  const [bounds, setBounds] = useState<BoundingRect>();
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
   const [bonelists, setSkinnedMeshs] = useState<any>();
   const [facelists, setFaceLists] = useState<any>();
-  const [models, setModels] = useState<ModelType[]>([])
+  const [models, setModels] = useState<ModelType[]>([]);
   useEffect(() => {
+    console.log(`This platform is ${window.navigator.platform}`);
     window.ipcRenderer.on('open_file',(event,arg) => {
-      console.log('open_file イベントリスナ');
-      let filePath = arg[0];
-      filePath = filePath.split('\\');
-      const fileName = filePath[filePath.length - 1];
-      const path = 'file://' + fileName;
+      let filePath:string= arg[0];
+      let path = null;
+      if(window.navigator.platform === 'Win32') {
+        path = filePath.split('\\').join('/');
+      } else {
+        // filePath = filePath.split('\\');
+        const fileName = filePath.split('\\')[filePath.length - 1];
+        path = 'file://' + fileName;
+      }
+      console.log(filePath);
       console.log(path);
       const m = {id:models.length,url:path}
       const newModel = [... models,m]
       console.log(newModel);
       setModels(newModel);
     });
+    const pathname = 'C:/Users/nishi/Downloads/Pronama-chan_Ver3/Ver3/MMD(Ver.3)/01_Normal_通常/プロ生ちゃん.pmx';
+    const m = {id:models.length,url:pathname}
+    const newModel = [... models,m]
+    console.log(newModel);
+    setModels(newModel);
     /*
     const f = async () => {
       setText("loading...");
@@ -90,11 +106,8 @@ function App() {
   return (
     <>
       <Grid container>
-          <Grid item xs={6}>
-            <BoneLists bonelists={bonelists}/>
-          </Grid>
-          <Grid item xs={6}>
-            <Canvas style={{backgroundColor:"black"}}
+          <Grid item xs={12}>
+            <Canvas style={{backgroundColor:"black",height:"400px"}}
             colorManagement={false} 
             camera={{ fov: 50, position: [0, 0, 30] }} >
               <ambientLight />
@@ -108,6 +121,18 @@ function App() {
               <gridHelper />
             </Canvas>
           </Grid>
+          <Measure
+              bounds
+              onResize={contentRect => {
+                setBounds(contentRect.bounds);
+              }}
+            >
+                {({ measureRef }) => (
+                  <Grid item xs={12} ref={measureRef} style={{height:200}}>
+                    {<TimeLiner width={bounds?.width} height={bounds?.height} bonelists={bonelists} /> }
+                  </Grid>
+                )}
+          </Measure>
       </Grid>
     </>
   );

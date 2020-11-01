@@ -35,7 +35,7 @@ function createMenu() {
 function openFile() {
   const path = dialog.showOpenDialogSync({properties:['openFile']});
   if(path) {
-    // console.log(path);
+    console.log(path);
     win.webContents.send('open_file',path);
   }
 }
