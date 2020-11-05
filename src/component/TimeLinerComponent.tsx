@@ -1,8 +1,7 @@
-import React, { useEffect, useState, useRef, Suspense } from 'react';
-import { Face3, Geometry, MorphTarget, SkinnedMesh } from 'three';
+import React, { useEffect, useState, useRef, Suspense, CSSProperties } from 'react';
+import { BufferGeometry, Face3, Geometry, MorphTarget, SkinnedMesh } from 'three';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
-import { ScrollableCanvasContainer, Canvas } from 'react-scrollable-canvas';
 
 
 const WIDTH = 300;
@@ -16,7 +15,7 @@ const CIRCLE_SIZE = 30;
 const w = 15;
 const itemListHeight = 40;
 const frameHeight = 140;
-const canvasStyle = {
+const canvasStyle:CSSProperties = {
   float:"right",
   // position: 'absolute',
   // backgroundColor: "green",
@@ -110,7 +109,6 @@ function TimeLiner(props:any) {
     const width = props.width;
     const height = itemListRef.current?.clientHeight;
 
-     console.log('width=' + width);
     if(ctx && keyCtx && width && height) {
       setNowWidth(width);
       setNowHeight(height);
@@ -219,22 +217,21 @@ function TimeLiner(props:any) {
     const LINEHEIGHT = 2;
     const node = e.target as HTMLElement;
     const rect = node.getBoundingClientRect();
-    var x = e.clientX - rect.left - 0 - (DIAMOND_SIZE * 0.5);
+    if(!itemListRef.current?.clientWidth)return;
+    var x = e.clientX - itemListRef.current?.clientWidth;
     var y = e.clientY - rect.top;
-    // console.log("x=" + x + ",y=" + y);
 
     if((x % w) < (w/2)){
-      x = x - (x % w);
+      x = (x - (x % w));
     } else {
       x = (x - (x % w)) + w;
     }
-    console.log("keyFrameX=" + x);
-    const yCenter = y - (DIAMOND_SIZE * 0.5);
-    // console.log(((Math.floor((yCenter - 144) / itemListHeight) + 1) * (itemListHeight + LINEHEIGHT)) + 144 - DIAMOND_SIZE);
-    const itemListNum = Math.floor((yCenter) / itemListHeight) + 1;
+    const itemListNum = Math.floor(y / (itemListHeight + LINEHEIGHT)) + 1;
     const keyFrameNum = (x / w) + 1;
-    console.log("keyFrameNum="+keyFrameNum);
+    // console.log("keyFrameNum="+keyFrameNum);
     const y2 = ((itemListNum * (itemListHeight + LINEHEIGHT)) - DIAMOND_SIZE);
+    // console.log("itemListNum=" + itemListNum + ",y=" + y);
+    
     const keyFrame = new KeyFrame(x,y2,itemListNum,keyFrameNum);
     keyFrame.draw(ctx);
     keyFrames.push(keyFrame);
@@ -279,11 +276,13 @@ function TimeLiner(props:any) {
     if(selectKeyFrame){
       // console.log('y=' + y);
       // console.log(((selectKeyFrame.itemListNum - 1)  + (frameHeight + 4)) - 100 + "以上　" + ((((selectKeyFrame.itemListNum - 1) * (itemListHeight + 2))) + (frameHeight + 4) - selectKeyFrame.height - 100) + "未満");
-      if(y > (selectKeyFrame.itemListNum - 1) + (frameHeight + 4) - 100 && y < (((selectKeyFrame.itemListNum - 1) * (itemListHeight + 2))) + (frameHeight + 4) - selectKeyFrame.height - 100) {
+      const maxY = (((selectKeyFrame.itemListNum - 1) * (itemListHeight + 2))) + (frameHeight + 4) - selectKeyFrame.height - 100;
+      // console.log("y=" + y + ",maxY="+maxY+",(maxY - itemListHeight)=" + (maxY - itemListHeight));
+      if(y > (maxY - itemListHeight) && y < maxY) {
         selectKeyFrame.y = y;
-        const currentRange = Math.abs(y - ((itemListHeight * selectKeyFrame.itemListNum) - selectKeyFrame.height + 1));
+        const currentRange = maxY - y;
         const maxRange = (itemListHeight - selectKeyFrame.height);
-        console.log("current=" + currentRange + ",maxRange=" + maxRange);
+        // console.log("current=" + currentRange + ",maxRange=" + maxRange);
         const p = currentRange / maxRange;
         selectKeyFrame.p = p;
         // console.log(p);
@@ -318,7 +317,7 @@ function TimeLiner(props:any) {
         { isExpandFaceList ? geometry.morphTargets.map((morph,index) => {
           return (
               <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF"}}>
-                <span style={{color:"white",lineHeight:"40px",padding:"0px 0px 0px 50px"}}>{morph.name}</span>
+                <span style={{color:"white",lineHeight:"40px",padding:"0px 0px 0px 40px"}}>{morph.name}</span>
               </div>
           )
         }): null}
@@ -326,16 +325,12 @@ function TimeLiner(props:any) {
     );
   }
 
-  function onScroll(scrollTop: number, scrollLeft: number){
-    setScrollTop(scrollLeft);
-    setScrollLeft(scrollLeft);
-  };
-  function onScrollHandler(e: React.UIEvent<HTMLDivElement, UIEvent>){
-    const node = e.target as HTMLElement;
-    const top = node.scrollTop;
-    const ctx = keyFrameCanvasRef.current?.getContext('2d');
-    if(!ctx)return;
-    // ctx.transform()
+  function setBones(){
+    if(!skinnedMesh)return null;
+    console.log(skinnedMesh);
+    const geometry:BufferGeometry = skinnedMesh.geometry as BufferGeometry;
+    console.log(geometry.userData.MMD);
+    return null;
   }
   return (
     <div>
@@ -346,28 +341,6 @@ function TimeLiner(props:any) {
             <input type="text" value={currentFrameNum}/>
           </div>
         </div>
-        {/* <ScrollableCanvasContainer
-            width={nowWidth-200}
-            height={nowHeight}
-            largeWidth={LARGE_WIDTH}
-            largeHeight={LARGE_HEIGHT}
-            onScroll={onScroll}
-          >
-            <Canvas
-              ref={canvasRef}
-              width={nowWidth-200}
-              height={nowHeight}
-              translateX={scrollLeft}
-              translateY={scrollTop}
-            />
-            <Canvas
-              ref={keyFrameCanvasRef}
-              width={nowWidth-200}
-              height={nowHeight}
-              translateX={scrollLeft}
-              translateY={scrollTop}
-            />
-        </ScrollableCanvasContainer> */}
         <canvas
         style={canvasStyle}
         ref={canvasRef}        
@@ -388,19 +361,18 @@ function TimeLiner(props:any) {
                 onMouseMove={onMouseMoveHandler}
                 onMouseUp={onMouseUpHandler}
                 onDoubleClick={onDoubleClickHandler}
-                onScroll={onScrollHandler}
                 onClick={onClickHandler}>
         <div style={{width:"200px",float:"left" }} ref={itemListRef}>
             { setFaces() }
+            { setBones() }
         </div>
         <div>
           <canvas 
           id="keyFrameCanvas"
           style={{  float:"right",
-          // backgroundColor: "green",
           zIndex:-1}}
-          width={nowWidth-200-17}
-          height={200}
+          width={nowWidth-200}
+          height={itemListRef.current?.clientHeight}
           ref={keyFrameCanvasRef}>
           </canvas>
         </div>
