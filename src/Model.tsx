@@ -3,7 +3,7 @@ import { OrbitControls } from '@react-three/drei/OrbitControls';
 import { TransformControls } from '@react-three/drei/TransformControls';
 import React, { useRef, useState, Suspense, HtmlHTMLAttributes, useMemo, useEffect }  from 'react';
 import { Canvas,useLoader } from 'react-three-fiber';
-import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader'
+import { MMDLoader } from './libs/MMDLoader'
 import { ControlsProvider, Controls, useControl } from 'react-three-gui';
 
 function Model(props: any) {

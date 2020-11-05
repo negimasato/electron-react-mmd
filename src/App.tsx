@@ -5,7 +5,6 @@ import Model from './Model'
 import {Canvas,useFrame} from 'react-three-fiber';
 import { ControlsProvider, Controls, useControl } from 'react-three-gui';
 import { Grid } from '@material-ui/core';
-import BoneLists from './BoneLists';
 import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
 import { Bone } from 'three';
 import { SkinnedMesh } from 'three/src/objects/SkinnedMesh';
@@ -49,12 +48,8 @@ type ModelType = {
 }
 
 function App() {
-  const [text, setText] = useState("not loaded");
   const [bounds, setBounds] = useState<BoundingRect>();
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
   const [bonelists, setSkinnedMeshs] = useState<any>();
-  const [facelists, setFaceLists] = useState<any>();
   const [models, setModels] = useState<ModelType[]>([]);
   useEffect(() => {
     console.log(`This platform is ${window.navigator.platform}`);
@@ -64,44 +59,19 @@ function App() {
       if(window.navigator.platform === 'Win32') {
         path = filePath.split('\\').join('/');
       } else {
-        // filePath = filePath.split('\\');
-        const fileName = filePath.split('\\')[filePath.length - 1];
+        const fileSplitPath = filePath.split('\\');
+        const fileName = fileSplitPath[fileSplitPath.length - 1];
         path = 'file://' + fileName;
       }
       console.log(filePath);
       console.log(path);
       const m = {id:models.length,url:path}
       const newModel = [... models,m]
-      console.log(newModel);
       setModels(newModel);
     });
-    const pathname = 'C:/Users/nishi/Downloads/Pronama-chan_Ver3/Ver3/MMD(Ver.3)/01_Normal_通常/プロ生ちゃん.pmx';
-    const m = {id:models.length,url:pathname}
-    const newModel = [... models,m]
-    console.log(newModel);
-    setModels(newModel);
-    /*
-    const f = async () => {
-      setText("loading...");
-      try {
-        const dirs = await myAPI.readDir();
-        myAPI.save("uni-uni");
-        setText(`files are: ${dirs.join(", ")}`);
-      } catch (e) {
-        setText("loading was failed");
-        alert(e);
-      }
-    };
-    f();
-    */
   }, []);
   function setSkinnedMesh(skinnedMesh:SkinnedMesh) {
-    console.log('setSkinnedMesh!!');
-    // console.log(skinnedMesh);
     setSkinnedMeshs(skinnedMesh);
-  }
-  function setFaceList() {
-    // setFaceLists();
   }
   return (
     <>

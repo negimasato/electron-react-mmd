@@ -1,24 +1,13 @@
-import React, { useEffect, useState, useRef, Suspense, CSSProperties } from 'react';
-import { BufferGeometry, Face3, Geometry, MorphTarget, SkinnedMesh } from 'three';
+import React, { useEffect, useState, useRef, CSSProperties } from 'react';
+import {Geometry, SkinnedMesh } from 'three';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
-
-
-const WIDTH = 300;
-const HEIGHT = 300;
-const LARGE_WIDTH = 600;
-const LARGE_HEIGHT = 600;
-const CIRCLE_RADIUS = 5;
-const CIRCLE_SIZE = 30;
-
 
 const w = 15;
 const itemListHeight = 40;
 const frameHeight = 140;
 const canvasStyle:CSSProperties = {
   float:"right",
-  // position: 'absolute',
-  // backgroundColor: "green",
   padding: "5",
   zIndex:-3
 }
@@ -74,9 +63,7 @@ class KeyFrame{
 function TimeLiner(props:any) {
   const [nowWidth, setNowWidth] = useState(500);
   const [nowHeight, setNowHeight] = useState(100);
-  const [scrollTop, setScrollTop] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
-  const [isExpandFaceList, setIsExpandFaceList] = useState(false);
+  const [isExpandFrameGroupList, setisExpandFrameGroupList] = useState([false,false,false,false,false,false,false,false,false,false,false]);
   const [isDragMode, setIsDragMode] = useState(false);
   const [keyFrames, setKeyFrames] = useState<KeyFrame[]>([]);
   const [itemLists, setItemLists] = useState<ItemList[]>([]);
@@ -96,7 +83,7 @@ function TimeLiner(props:any) {
     //load
     const KAO=1;
     if(!skinnedMesh)return;
-    skinnedMesh?.morphTargetInfluences?.map((no,index) => {
+    skinnedMesh?.morphTargetInfluences?.map((no,_index) => {
       const itemList = new ItemList(KAO,no);
       itemLists.push(itemList);
     });
@@ -147,18 +134,14 @@ function TimeLiner(props:any) {
     const keyFrameNum = currentFrameNum;
     for(var keyframe of keyFrames){
       if(keyframe.keyFrameNum === keyFrameNum){
-        // console.log('設定しているフレーム');
-        // const itemList = itemLists[keyframe.itemListNum];
         if(skinnedMesh.morphTargetInfluences) {
-          console.log("keyframe.itemListNum=" + keyframe.itemListNum);
-          console.log("p=" + keyframe.p);
           skinnedMesh.morphTargetInfluences[keyframe.itemListNum - 2] = keyframe.p;
         }
       }
     }
   }
 
-  function drawVerticalLine(ctx:CanvasRenderingContext2D,x:number,height:number) {
+  function drawVerticalLine(ctx:CanvasRenderingContext2D,x:number,_height:number) {
     ctx.strokeStyle="#FFFFFF";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -166,12 +149,14 @@ function TimeLiner(props:any) {
     ctx.lineTo(x, 100);
     ctx.closePath();
     ctx.stroke();
-  };
+  }
+
   function drawFrameText(ctx:CanvasRenderingContext2D,text:string,x:number,y:number) {
     var textWidth = ctx.measureText(text).width;
     ctx.fillStyle = 'rgba(255, 255, 255)';
     ctx.fillText(text, x - (textWidth / 2), y);
   }
+
   function ReDrawKeyFrames(){
     const keyFrameCanvasCtx = keyFrameCanvasRef.current?.getContext('2d');
     if(!keyFrameCanvasCtx)return;
@@ -184,22 +169,17 @@ function TimeLiner(props:any) {
   function onClickHandler(e:React.MouseEvent<HTMLDivElement, MouseEvent>){
     const node = e.target as HTMLElement;
     const rect = node.getBoundingClientRect();
-    // console.log("e.clientX=" + e.clientX+",e.clientY=" + e.clientY);
-    // console.log("rect.left=" + rect.left+",rect.top=" + rect.top);
     const x = e.clientX - 200;
     const y = e.clientY - rect.top;
     var lineX = 0;
     const ctx = selectLineCanvasRef.current?.getContext('2d');
     if(!ctx)return;
     ctx.clearRect(0, 0, nowWidth, 400);
-    // draw();
-
     if((x % w) < (w/2)){
       lineX = (x - (x % w));
     } else {
       lineX = (x - (x % w)) + w;
     }
-    // console.log("lineX=" + lineX);
     
     setCurrentFrameNum((lineX / w) + 1);
     ctx.strokeStyle="#FF0000";
@@ -210,6 +190,7 @@ function TimeLiner(props:any) {
     ctx.closePath();
     ctx.stroke();
   }
+
   function onDoubleClickHandler(e:React.MouseEvent<HTMLDivElement, MouseEvent>){
     const ctx = keyFrameCanvasRef.current?.getContext('2d');
     if(!ctx)return;
@@ -268,36 +249,28 @@ function TimeLiner(props:any) {
 
   function onMouseMoveHandler(e: React.MouseEvent<HTMLDivElement, MouseEvent>){
     if(!isDragMode)return;
-    // console.log("onMouseMoveHandler");
     const node = e.target as HTMLElement;
     const rect = node.getBoundingClientRect();
     var x = e.clientX - rect.left;
     var y = e.clientY - rect.top;
     if(selectKeyFrame){
-      // console.log('y=' + y);
-      // console.log(((selectKeyFrame.itemListNum - 1)  + (frameHeight + 4)) - 100 + "以上　" + ((((selectKeyFrame.itemListNum - 1) * (itemListHeight + 2))) + (frameHeight + 4) - selectKeyFrame.height - 100) + "未満");
       const maxY = (((selectKeyFrame.itemListNum - 1) * (itemListHeight + 2))) + (frameHeight + 4) - selectKeyFrame.height - 100;
-      // console.log("y=" + y + ",maxY="+maxY+",(maxY - itemListHeight)=" + (maxY - itemListHeight));
       if(y > (maxY - itemListHeight) && y < maxY) {
         selectKeyFrame.y = y;
         const currentRange = maxY - y;
         const maxRange = (itemListHeight - selectKeyFrame.height);
-        // console.log("current=" + currentRange + ",maxRange=" + maxRange);
         const p = currentRange / maxRange;
         selectKeyFrame.p = p;
-        // console.log(p);
         ReDrawKeyFrames();
         drawMmdFromCurrentFrameNum();
         const keyCtx = keyFrameCanvasRef.current?.getContext('2d');
         if(!keyCtx)return;
         drawHorizonLines(keyCtx,nowHeight);
-      }
-      
+      } 
     }
-    // console.log("x=" + x + ",y=" + y);
   }
 
-  function onMouseUpHandler(e: React.MouseEvent<HTMLDivElement, MouseEvent>){
+  function onMouseUpHandler(_e: React.MouseEvent<HTMLDivElement, MouseEvent>){
     if(isDragMode){
       setIsDragMode(false);
       setSelectKeyFrame(null);
@@ -309,29 +282,55 @@ function TimeLiner(props:any) {
       return null;
     }
     const geometry:Geometry = skinnedMesh.geometry as Geometry;
+    var list = [];
+    // @ts-ignore
+    const mmdData:any = geometry.userData.MMD;
+    for(let i = 1; i < mmdData.frames.length ; i++){
+      //グループ
+      list.push(
+        <div style={{height:itemListHeight,border: "1px solid #FFFFFF",color:"white"}}>
+          {isExpandFrameGroupList[i] ? <span onClick={(e) => toggleGroup(i,false)}><RemoveIcon /></span> : <span onClick={(e) => toggleGroup(i,true)}><AddIcon /></span>}{mmdData.frames[i].name}
+        </div>
+      )
+      if(isExpandFrameGroupList[i] === false)continue;
+      for(var ii = 0; ii < mmdData.frames[i].elements.length; ii++) {
+        const index = mmdData.frames[i].elements[ii].index
+        if(mmdData.frames[i].type === 1){
+          //表情
+          list.push(
+            <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF"}}>
+              <span style={{color:"white",lineHeight:"40px",padding:"0px 0px 0px 40px"}}>{mmdData.morphs[index].name}</span>
+            </div>
+          )
+        }else{
+          //それ以外
+          list.push(
+            <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF"}}>
+              <span style={{color:"white",lineHeight:"40px",padding:"0px 0px 0px 40px"}}>{mmdData.bones[index].name}</span>
+            </div>
+          )
+        }
+      }
+    }
     return (
       <div>
-        <div style={{height:itemListHeight,border: "1px solid #FFFFFF",color:"white"}}>
-          {isExpandFaceList ? <span onClick={(e) => setIsExpandFaceList(false)}><RemoveIcon /></span> : <span onClick={(e) => setIsExpandFaceList(true)}><AddIcon /></span>}表情
-        </div>
-        { isExpandFaceList ? geometry.morphTargets.map((morph,index) => {
-          return (
-              <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF"}}>
-                <span style={{color:"white",lineHeight:"40px",padding:"0px 0px 0px 40px"}}>{morph.name}</span>
-              </div>
-          )
-        }): null}
+        {list}
       </div>
     );
   }
 
-  function setBones(){
-    if(!skinnedMesh)return null;
-    console.log(skinnedMesh);
-    const geometry:BufferGeometry = skinnedMesh.geometry as BufferGeometry;
-    console.log(geometry.userData.MMD);
-    return null;
+  function toggleGroup(groupNo:number,isOpen:boolean){
+    var list:boolean[] = [];
+    isExpandFrameGroupList.forEach((e, index) => {
+      if(index === groupNo){
+        list.push(isOpen);
+      }else{
+        list.push(e);
+      }
+    });
+    setisExpandFrameGroupList(list);
   }
+
   return (
     <div>
       <div>
@@ -364,7 +363,6 @@ function TimeLiner(props:any) {
                 onClick={onClickHandler}>
         <div style={{width:"200px",float:"left" }} ref={itemListRef}>
             { setFaces() }
-            { setBones() }
         </div>
         <div>
           <canvas 
