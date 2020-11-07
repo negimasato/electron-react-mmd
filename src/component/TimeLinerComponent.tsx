@@ -6,6 +6,9 @@ import RemoveIcon from '@material-ui/icons/Remove';
 const w = 15;
 const itemListHeight = 40;
 const frameHeight = 140;
+const DIAMOND_SIZE = 10;
+const LINEHEIGHT = 2;
+
 const canvasStyle:CSSProperties = {
   float:"right",
   padding: "5",
@@ -181,6 +184,14 @@ function TimeLiner(props:any) {
       lineX = (x - (x % w)) + w;
     }
     
+    var elem = window.document.elementFromPoint(1, e.clientY);
+    if(!elem)return;
+    // @ts-ignore
+    const frameId = elem.dataset.frameId;
+    if(frameId) {
+      // console.log(skinnedMesh);
+      props.setSelectObject(frameId)
+    }
     setCurrentFrameNum((lineX / w) + 1);
     ctx.strokeStyle="#FF0000";
     ctx.lineWidth = 1;
@@ -194,8 +205,6 @@ function TimeLiner(props:any) {
   function onDoubleClickHandler(e:React.MouseEvent<HTMLDivElement, MouseEvent>){
     const ctx = keyFrameCanvasRef.current?.getContext('2d');
     if(!ctx)return;
-    const DIAMOND_SIZE = 10;
-    const LINEHEIGHT = 2;
     const node = e.target as HTMLElement;
     const rect = node.getBoundingClientRect();
     if(!itemListRef.current?.clientWidth)return;
@@ -294,19 +303,19 @@ function TimeLiner(props:any) {
       )
       if(isExpandFrameGroupList[i] === false)continue;
       for(var ii = 0; ii < mmdData.frames[i].elements.length; ii++) {
-        const index = mmdData.frames[i].elements[ii].index
+        const index:number = mmdData.frames[i].elements[ii].index
         if(mmdData.frames[i].type === 1){
           //表情
           list.push(
-            <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF"}}>
-              <span style={{color:"white",lineHeight:"40px",padding:"0px 0px 0px 40px"}}>{mmdData.morphs[index].name}</span>
+            <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF"}} data-frame-id={index}>
+              <span data-frame-id={index} style={{color:"white",lineHeight:"40px",padding:"0px 0px 0px 40px"}}>{mmdData.morphs[index].name}</span>
             </div>
           )
         }else{
           //それ以外
           list.push(
-            <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF"}}>
-              <span style={{color:"white",lineHeight:"40px",padding:"0px 0px 0px 40px"}}>{mmdData.bones[index].name}</span>
+            <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF"}} data-frame-id={index}>
+              <span data-frame-id={index} style={{color:"white",lineHeight:"40px",padding:"0px 0px 0px 40px"}}>{mmdData.bones[index].name}</span>
             </div>
           )
         }

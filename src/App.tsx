@@ -11,37 +11,6 @@ import { SkinnedMesh } from 'three/src/objects/SkinnedMesh';
 import Measure, { BoundingRect }  from 'react-measure';
 import TimeLiner from './component/TimeLinerComponent';
 
-
-function Box(props: any) {
-  // This reference will give us direct access to the mesh
-  const mesh = useRef<THREE.Mesh>()
-
-  // Set up state for the hovered and active state
-  const [hovered, setHover] = useState(false)
-  const [active, setActive] = useState(false)
-
-  // Rotate mesh every frame, this is outside of React without overhead
-  useFrame(() => {
-    if(!mesh.current) {
-      return;
-    }
-    mesh.current.rotation.x = mesh.current.rotation.y += 0.01
-  })
-
-  return (
-    <mesh
-      {...props}
-      ref={mesh}
-      scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
-      onClick={(e) => setActive(!active)}
-      onPointerOver={(e) => setHover(true)}
-      onPointerOut={(e) => setHover(false)}
-    >
-      <boxBufferGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
-    </mesh>
-  )
-}
 type ModelType = {
   id: number
   url: string
@@ -51,6 +20,7 @@ function App() {
   const [bounds, setBounds] = useState<BoundingRect>();
   const [bonelists, setSkinnedMeshs] = useState<any>();
   const [models, setModels] = useState<ModelType[]>([]);
+  const [selectObject, setSelectObject] = useState(0);
   useEffect(() => {
     console.log(`This platform is ${window.navigator.platform}`);
     window.ipcRenderer.on('open_file',(event,arg) => {
@@ -85,7 +55,7 @@ function App() {
               {models.map((model,index) => {
                 console.log(model.id);
                 return(
-                  <Model key={model.id} url={model.url} position={[0,0,0]} setSkinnedMesh={setSkinnedMesh}/>
+                  <Model key={model.id} url={model.url} position={[0,0,0]}　selectObject={selectObject} setSkinnedMesh={setSkinnedMesh}/>
               )})}
               </Suspense>
               <gridHelper />
@@ -99,7 +69,7 @@ function App() {
             >
                 {({ measureRef }) => (
                   <Grid item xs={12} ref={measureRef} style={{height:200}}>
-                    {<TimeLiner width={bounds?.width} height={bounds?.height} bonelists={bonelists} /> }
+                    {<TimeLiner width={bounds?.width} height={bounds?.height} setSelectObject={setSelectObject} bonelists={bonelists} /> }
                   </Grid>
                 )}
           </Measure>

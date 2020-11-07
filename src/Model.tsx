@@ -11,20 +11,9 @@ function Model(props: any) {
     const orbit = useRef<OrbitControls>()
     const transform = useRef<TransformControls>()
     const mode = useControl("mode", { type: "select", items: ["scale", "rotate", "translate"] })
-    // console.log('props.url = ' + props.url)
     let nodes = useLoader(MMDLoader, props.url)
-    console.log(nodes.toJSON());
-    // if(nodes.morphTargetInfluences) {
-    //   nodes.morphTargetInfluences[0] = 1;
-    // }
-    
-
     props.setSkinnedMesh(nodes);
 
-    // for ( var i = 0; i < bones.length; i++ ) {
-    //   var bone = bones[i];
-    //   console.log(bone.name)
-    // }
     useEffect(() => {
       if (typeof transform.current !== 'undefined') {
         const controls:any = transform.current
@@ -34,7 +23,8 @@ function Model(props: any) {
           }
         }
         if(typeof controls !== 'undefined') {
-          controls.setMode(mode);
+          controls.attach(nodes.skeleton.bones[props.selectObject]);
+          controls.setMode('rotate');
           controls.addEventListener("dragging-changed", callback)
           return () => controls.removeEventListener("dragging-changed", callback)
         }
