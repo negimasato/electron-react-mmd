@@ -364,7 +364,7 @@ function TimeLiner(props:any) {
         >
         </canvas>
       </div>
-      <div style={{overflow:"scroll",height:200,clear:"left"}}
+      <div style={{overflow:"scroll",height:300,clear:"left"}}
                 onMouseDown={onMouseDownHandler}
                 onMouseMove={onMouseMoveHandler}
                 onMouseUp={onMouseUpHandler}

@@ -46,7 +46,19 @@ function App() {
   return (
     <>
       <Grid container>
-          <Grid item xs={12}>
+          <Measure
+              bounds
+              onResize={contentRect => {
+                setBounds(contentRect.bounds);
+              }}
+            >
+                {({ measureRef }) => (
+                  <Grid item xs={4} ref={measureRef} style={{height:400}}>
+                    {<TimeLiner width={bounds?.width} height={bounds?.height} setSelectObject={setSelectObject} bonelists={bonelists} /> }
+                  </Grid>
+                )}
+          </Measure>
+          <Grid item xs={8}>
             <Canvas style={{backgroundColor:"black",height:"400px"}}
             colorManagement={false} 
             camera={{ fov: 50, position: [0, 0, 30] }} >
@@ -61,18 +73,11 @@ function App() {
               <gridHelper />
             </Canvas>
           </Grid>
-          <Measure
-              bounds
-              onResize={contentRect => {
-                setBounds(contentRect.bounds);
-              }}
-            >
-                {({ measureRef }) => (
-                  <Grid item xs={12} ref={measureRef} style={{height:200}}>
-                    {<TimeLiner width={bounds?.width} height={bounds?.height} setSelectObject={setSelectObject} bonelists={bonelists} /> }
-                  </Grid>
-                )}
-          </Measure>
+          <Grid item xs={4} style={{border: "1px solid #ffffff"}}>
+            <p>モデル</p>
+          </Grid>
+          <Grid item xs={4}>
+          </Grid>
       </Grid>
     </>
   );
