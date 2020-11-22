@@ -3,7 +3,7 @@ import { OrbitControls } from '@react-three/drei/OrbitControls';
 import { TransformControls } from '@react-three/drei/TransformControls';
 import React, { useRef, useState, Suspense, HtmlHTMLAttributes, useMemo, useEffect }  from 'react';
 import { Canvas,useLoader } from 'react-three-fiber';
-import { MMDLoader } from './libs/MMDLoader'
+import { MMDLoader } from '../libs/MMDLoader'
 import { ControlsProvider, Controls, useControl } from 'react-three-gui';
 
 function Model(props: any) {
@@ -11,8 +11,8 @@ function Model(props: any) {
     const orbit = useRef<OrbitControls>()
     const transform = useRef<TransformControls>()
     const mode = useControl("mode", { type: "select", items: ["scale", "rotate", "translate"] })
-    let nodes = useLoader(MMDLoader, props.url)
-    props.setSkinnedMesh(nodes);
+    // let nodes = useLoader(MMDLoader, props.url)
+    // props.setSkinnedMesh(nodes);
 
     useEffect(() => {
       if (typeof transform.current !== 'undefined') {
@@ -23,7 +23,7 @@ function Model(props: any) {
           }
         }
         if(typeof controls !== 'undefined') {
-          controls.attach(nodes.skeleton.bones[props.selectObject]);
+          controls.attach(props.modelClass.mesh.skeleton.bones[props.selectObject]);
           controls.setMode('rotate');
           controls.addEventListener("dragging-changed", callback)
           return () => controls.removeEventListener("dragging-changed", callback)
@@ -35,7 +35,7 @@ function Model(props: any) {
         <TransformControls ref={transform}>
           <mesh ref={mesh}>
             <primitive 
-            object={nodes} dispose={null} scale={[0.25 ,0.25, 0.25]} position={props.position} />
+            object={props.modelClass.mesh} dispose={null} scale={[0.25 ,0.25, 0.25]} position={props.position} />
           </mesh>
         </TransformControls>
         <OrbitControls ref={orbit}/>

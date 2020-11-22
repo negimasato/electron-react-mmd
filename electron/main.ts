@@ -1,13 +1,15 @@
-import { app, BrowserWindow, Menu, dialog} from "electron";
+import { app, BrowserWindow, Menu, dialog, ipcMain} from "electron";
 import * as path from "path";
 import * as isDev from "electron-is-dev";
 // import {initIpcMain} from './ipc-main-handler';
 
+ipcMain.on('openFileFromRenderer',(event:Electron.IpcMainEvent) => {
+  openFile();
+});
 
 var win: BrowserWindow;
 
 function createMenu() {
-  console.log('createMenu!!')
   const template = [
     {
       label: 'Electron',

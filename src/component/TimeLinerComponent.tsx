@@ -2,9 +2,10 @@ import React, { useEffect, useState, useRef, CSSProperties } from 'react';
 import {Geometry, SkinnedMesh } from 'three';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
+import FrameControl from './FrameControl';
 
 const w = 15;
-const itemListHeight = 40;
+const itemListHeight = 20;
 const frameHeight = 140;
 const DIAMOND_SIZE = 10;
 const LINEHEIGHT = 2;
@@ -78,7 +79,7 @@ function TimeLiner(props:any) {
   const itemListRef = useRef<HTMLDivElement>(null);
 
 
-  var skinnedMesh:SkinnedMesh = props.bonelists;
+  var skinnedMesh:SkinnedMesh = props.mesh;
   
 
   useEffect(() => {
@@ -108,15 +109,16 @@ function TimeLiner(props:any) {
       for(var i = 0;i < width;i = i+w){
         c++
         if(c === 10) {
-          drawVerticalLine(ctx,i,height);
-          drawFrameText(ctx,frame.toString(),i,70);
+          drawVerticalLine(keyCtx,i,height);
+          drawFrameText(ctx,frame.toString(),i,10);
           frame=frame + c;
           c=0;
         }else{
-          drawVerticalLine(ctx,i,height);
+          drawVerticalLine(keyCtx,i,height);
         }
       }
       drawHorizonLines(keyCtx,height);
+      drawSelectFrameLine(keyCtx);
     }
   }
 
@@ -144,12 +146,12 @@ function TimeLiner(props:any) {
     }
   }
 
-  function drawVerticalLine(ctx:CanvasRenderingContext2D,x:number,_height:number) {
+  function drawVerticalLine(ctx:CanvasRenderingContext2D,x:number,height:number) {
     ctx.strokeStyle="#FFFFFF";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(x, 80);
-    ctx.lineTo(x, 100);
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
     ctx.closePath();
     ctx.stroke();
   }
@@ -172,7 +174,7 @@ function TimeLiner(props:any) {
   function onClickHandler(e:React.MouseEvent<HTMLDivElement, MouseEvent>){
     const node = e.target as HTMLElement;
     const rect = node.getBoundingClientRect();
-    const x = e.clientX - 200;
+    const x = e.clientX - 100;
     const y = e.clientY - rect.top;
     var lineX = 0;
     const ctx = selectLineCanvasRef.current?.getContext('2d');
@@ -193,11 +195,22 @@ function TimeLiner(props:any) {
       props.setSelectObject(frameId)
     }
     setCurrentFrameNum((lineX / w) + 1);
-    ctx.strokeStyle="#FF0000";
+    drawSelectFrameLine(ctx);
+  }
+
+  /**
+   * drawSelectFrameLine
+   * 選択しているフレーム番号に線を引く
+   * @param ctx 
+   */
+  function drawSelectFrameLine(ctx: CanvasRenderingContext2D){
+    const x = currentFrameNum * w;
+    const height = itemListRef.current?.clientHeight;
+    ctx.strokeStyle="#66cc99";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(lineX, 20);
-    ctx.lineTo(lineX, 300);
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
     ctx.closePath();
     ctx.stroke();
   }
@@ -297,8 +310,11 @@ function TimeLiner(props:any) {
     for(let i = 1; i < mmdData.frames.length ; i++){
       //グループ
       list.push(
-        <div style={{height:itemListHeight,border: "1px solid #FFFFFF",color:"white"}}>
-          {isExpandFrameGroupList[i] ? <span onClick={(e) => toggleGroup(i,false)}><RemoveIcon /></span> : <span onClick={(e) => toggleGroup(i,true)}><AddIcon /></span>}{mmdData.frames[i].name}
+        <div style={{height:itemListHeight,border: "1px solid #FFFFFF",color:"white",fontSize:10}}>
+          {isExpandFrameGroupList[i] ? 
+            <span onClick={(e) => toggleGroup(i,false)}><RemoveIcon fontSize="small" style={{display:"inline-block",verticalAlign: "middle"}}/></span> : 
+            <span onClick={(e) => toggleGroup(i,true)} ><AddIcon    fontSize="small" style={{display:"inline-block",verticalAlign: "middle"}}/></span>}
+            <p style={{display:"inline",verticalAlign:"middle"}}>{mmdData.frames[i].name}</p>
         </div>
       )
       if(isExpandFrameGroupList[i] === false)continue;
@@ -307,15 +323,15 @@ function TimeLiner(props:any) {
         if(mmdData.frames[i].type === 1){
           //表情
           list.push(
-            <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF"}} data-frame-id={index}>
-              <span data-frame-id={index} style={{color:"white",lineHeight:"40px",padding:"0px 0px 0px 40px"}}>{mmdData.morphs[index].name}</span>
+            <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF",fontSize:10}} data-frame-id={index}>
+              <span data-frame-id={index} style={{color:"white",padding:"0px 0px 0px 20px"}}>{mmdData.morphs[index].name}</span>
             </div>
           )
         }else{
           //それ以外
           list.push(
-            <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF"}} data-frame-id={index}>
-              <span data-frame-id={index} style={{color:"white",lineHeight:"40px",padding:"0px 0px 0px 40px"}}>{mmdData.bones[index].name}</span>
+            <div key={index} style={{height:itemListHeight,border: "1px solid #FFFFFF",fontSize:10}} data-frame-id={index}>
+              <span data-frame-id={index} style={{color:"white",padding:"0px 0px 0px 20px"}}>{mmdData.bones[index].name}</span>
             </div>
           )
         }
@@ -343,23 +359,21 @@ function TimeLiner(props:any) {
   return (
     <div>
       <div>
-        <div style={{width:"200px",float:"left" }}>
-          <div style={{height:"100px",border: "1px solid #FFFFFF"}}>
-            <p style={{color:"white"}}>フレーム</p>
-            <input type="text" value={currentFrameNum}/>
-          </div>
+        <FrameControl currentFrameNum={currentFrameNum} setCurrentFrameNum={setCurrentFrameNum}/>
+        <div style={{width:"100px",float:"left" }}>
+          <div style={{height:"20px",border: "1px solid #FFFFFF"}}></div>
         </div>
         <canvas
         style={canvasStyle}
         ref={canvasRef}        
-        width={nowWidth-200}
-        height={100}
+        width={nowWidth-100}
+        height={20}
         >
         </canvas>
         <canvas
         style={{clear:"both",position: 'absolute', zIndex:-2}}
         ref={selectLineCanvasRef}        
-        width={nowWidth-200}
+        width={nowWidth-100}
         height={300}
         >
         </canvas>
@@ -370,7 +384,7 @@ function TimeLiner(props:any) {
                 onMouseUp={onMouseUpHandler}
                 onDoubleClick={onDoubleClickHandler}
                 onClick={onClickHandler}>
-        <div style={{width:"200px",float:"left" }} ref={itemListRef}>
+        <div style={{width:"100px",float:"left" }} ref={itemListRef}>
             { setFaces() }
         </div>
         <div>
@@ -378,7 +392,7 @@ function TimeLiner(props:any) {
           id="keyFrameCanvas"
           style={{  float:"right",
           zIndex:-1}}
-          width={nowWidth-200}
+          width={nowWidth-117}
           height={itemListRef.current?.clientHeight}
           ref={keyFrameCanvasRef}>
           </canvas>
