@@ -206,6 +206,7 @@ function TimeLiner(props:any) {
   function drawSelectFrameLine(ctx: CanvasRenderingContext2D){
     const x = currentFrameNum * w;
     const height = itemListRef.current?.clientHeight;
+    if(!height)return;
     ctx.strokeStyle="#66cc99";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -310,7 +311,7 @@ function TimeLiner(props:any) {
     for(let i = 1; i < mmdData.frames.length ; i++){
       //グループ
       list.push(
-        <div style={{height:itemListHeight,border: "1px solid #FFFFFF",color:"white",fontSize:10}}>
+        <div key={i} style={{height:itemListHeight,border: "1px solid #FFFFFF",color:"white",fontSize:10}}>
           {isExpandFrameGroupList[i] ? 
             <span onClick={(e) => toggleGroup(i,false)}><RemoveIcon fontSize="small" style={{display:"inline-block",verticalAlign: "middle"}}/></span> : 
             <span onClick={(e) => toggleGroup(i,true)} ><AddIcon    fontSize="small" style={{display:"inline-block",verticalAlign: "middle"}}/></span>}

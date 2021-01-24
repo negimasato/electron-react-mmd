@@ -6,11 +6,13 @@ export class ModelClass{
     public url:string;
     public mesh: SkinnedMesh | null;
     public modelName: string | null;
+    public comment: string | null;
     constructor(id:number, url: string){
         this.id = id;
         this.url = url;
         this.mesh = null;
         this.modelName = null;
+        this.comment = null;
     }
     async loadMMD(url:string): Promise<Boolean>{
         return new Promise(resolve => {
@@ -22,6 +24,7 @@ export class ModelClass{
                     // @ts-ignore
                     const mmdData:any = mesh.geometry.userData.MMD;
                     this.modelName = mmdData.modelName;
+                    this.comment = mmdData.comment;
                     resolve(true);
                 });
             } catch(e) {

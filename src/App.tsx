@@ -17,30 +17,33 @@ function App() {
   const [selectObject, setSelectObject] = useState(0);
   const [activeModelId, setActiveModelId] = useState(-1);
   useEffect(() => {
-    console.log(`This platform is ${window.navigator.platform}`);
-    window.ipcRenderer.on('open_file',openFile);
-    return () => window.ipcRenderer.removeListener('open_file',openFile)
-  }, [models]);
-  async function openFile(event: any,arg: any){
-    let filePath:string= arg[0];
-    let path = null;
-    if(window.navigator.platform === 'Win32') {
-      path = filePath.split('\\').join('/');
-    } else {
-      const fileSplitPath = filePath.split('\\');
-      const fileName = fileSplitPath[fileSplitPath.length - 1];
-      path = 'file://' + fileName;
+    // console.log(`This platform is ${window.navigator.platform}`);
+    window.ipcRenderer.on('open_file', async (_ ,arg: any) => {
+      let filePath:string= arg[0];
+      let path = null;
+      if(window.navigator.platform === 'Win32') {
+        path = filePath.split('\\').join('/');
+      } else {
+        const fileSplitPath = filePath.split('\\');
+        const fileName = fileSplitPath[fileSplitPath.length - 1];
+        path = 'file://' + fileName;
+      }
+      const m:ModelClass = new ModelClass(models.length,path);
+      if(await m.loadMMD(path)) {
+        const newModels = [...models,m];
+        const newActiveId = activeModelId + 1;
+        alert(m.comment);
+        setModels(newModels);
+        setActiveModelId(newActiveId);
+      } else {
+        console.error('Load Error');
+      }
+    });
+    return function cleanUp(){
+      window.ipcRenderer.removeAllListeners('open_file')
     }
-    const m:ModelClass = new ModelClass(models.length,path);
-    if(await m.loadMMD(path)) {
-      const newModels = [...models,m];
-      const newActiveId = activeModelId + 1;
-      setModels(newModels);
-      setActiveModelId(newActiveId);
-    } else {
-      console.error('Load Error');
-    }
-  }
+  }, [activeModelId, models]);
+
   return (
     <>
       <Grid container>
@@ -53,7 +56,6 @@ function App() {
                 {({ measureRef }) => (
                   <Grid item xs={4} ref={measureRef} style={{height:400}}>
                     {(() => {
-                      console.log('activeModelId=' + activeModelId);
                       if(activeModelId > -1){
                         return(<TimeLiner width={bounds?.width} height={bounds?.height} setSelectObject={setSelectObject} mesh={models[activeModelId].mesh} />)
                       }
@@ -76,7 +78,7 @@ function App() {
             </Canvas>
           </Grid>
           <Grid item xs={4} style={{border: "1px solid #ffffff"}}>
-            <ModelControl models={models} setActiveModelId={setActiveModelId}/>
+            <ModelControl key="modelcontrol" models={models} setActiveModelId={setActiveModelId}/>
           </Grid>
           <Grid item xs={4}>
           </Grid>

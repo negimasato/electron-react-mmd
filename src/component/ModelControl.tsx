@@ -6,7 +6,6 @@ function ModelControl(props:any){
         props.setActiveModelId(event.target.value);
     }
     function onLoadModel(){
-        console.log('onLoadModel');
         window.ipcRenderer.send('openFileFromRenderer');
     }
     function onDeleteModel()
@@ -21,7 +20,7 @@ function ModelControl(props:any){
                     <select style={{width:"100%"}} onChange={onChangeModelSelect}>
                         {props.models.map((model: ModelClass,index: number) => {
                             return(
-                            <option value={model.id}>{model.modelName}</option>
+                            <option key={model.id} value={model.id}>{model.modelName}</option>
                         )})}
                     </select>
                 </div>

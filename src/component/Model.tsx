@@ -1,32 +1,29 @@
 
 import { OrbitControls } from '@react-three/drei/OrbitControls';
 import { TransformControls } from '@react-three/drei/TransformControls';
-import React, { useRef, useState, Suspense, HtmlHTMLAttributes, useMemo, useEffect }  from 'react';
-import { Canvas,useLoader } from 'react-three-fiber';
-import { MMDLoader } from '../libs/MMDLoader'
-import { ControlsProvider, Controls, useControl } from 'react-three-gui';
+import React, { useRef, useEffect }  from 'react';
 
 function Model(props: any) {
     const mesh = useRef<THREE.Mesh>()
     const orbit = useRef<OrbitControls>()
     const transform = useRef<TransformControls>()
-    const mode = useControl("mode", { type: "select", items: ["scale", "rotate", "translate"] })
-    // let nodes = useLoader(MMDLoader, props.url)
-    // props.setSkinnedMesh(nodes);
+    // const mode = useControl("mode", { type: "select", items: ["scale", "rotate", "translate"] })
 
     useEffect(() => {
       if (typeof transform.current !== 'undefined') {
-        const controls:any = transform.current
+        const controls: any = transform.current
         const callback = (event: any) => {
           if(orbit.current){
             orbit.current.enabled = !event.value
           }
         }
-        if(typeof controls !== 'undefined') {
-          controls.attach(props.modelClass.mesh.skeleton.bones[props.selectObject]);
-          controls.setMode('rotate');
-          controls.addEventListener("dragging-changed", callback)
-          return () => controls.removeEventListener("dragging-changed", callback)
+        if(controls) {
+          if(props.activeModelId === props.modelClass.id) {
+            controls.attach(props.modelClass.mesh.skeleton.bones[props.selectObject]);
+            controls.setMode('rotate');
+            controls.addEventListener("dragging-changed", callback)
+            return () => controls.removeEventListener("dragging-changed", callback)
+          }
         }
       }
     })
