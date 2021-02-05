@@ -8,6 +8,7 @@ import { SkinnedMesh } from 'three/src/objects/SkinnedMesh';
 import Measure, { BoundingRect }  from 'react-measure';
 import TimeLiner from './component/TimeLinerComponent';
 import ModelControl from './component/ModelControl';
+import BoneControl from './component/BoneControl';
 import { ModelClass } from './classes/ModelClass';
 import { Geometry } from 'three';
 
@@ -16,6 +17,7 @@ function App() {
   const [models, setModels] = useState<ModelClass[]>([]);
   const [selectObject, setSelectObject] = useState(0);
   const [activeModelId, setActiveModelId] = useState(-1);
+  const [controlMode, setControlMode] = useState('rotate');
   useEffect(() => {
     // console.log(`This platform is ${window.navigator.platform}`);
     window.ipcRenderer.on('open_file', async (_ ,arg: any) => {
@@ -71,7 +73,7 @@ function App() {
               <Suspense fallback={null}>
               {models.map((model,index) => {
                 return(
-                  <Model key={model.id} modelClass={model} position={[0,0,0]}　selectObject={selectObject} activeModelId={activeModelId}/>
+                  <Model key={model.id} modelClass={model} position={[0,0,0]}　selectObject={selectObject} activeModelId={activeModelId} controlMode={controlMode}/>
               )})}
               </Suspense>
               <gridHelper />
@@ -80,7 +82,8 @@ function App() {
           <Grid item xs={4} style={{border: "1px solid #ffffff"}}>
             <ModelControl key="modelcontrol" models={models} setActiveModelId={setActiveModelId}/>
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={4} style={{border: "1px solid #ffffff"}}>
+            <BoneControl key="modelcontrol" models={models} setActiveModelId={setActiveModelId} controlMode={controlMode} setControlMode={setControlMode} />
           </Grid>
       </Grid>
     </>
